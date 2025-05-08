@@ -18,13 +18,13 @@ file-duplication-detector/
 - **README.md**: Documentation for setup and deployment.
 
 ## Suspicious Metadata for Duplication
-The application highlights metadata that may indicate file duplication, prioritized as follows:
-- **Content Hash** (85% weight): Identical hashes mean identical files, a very strong indicator of misconduct.
-- **Creation Date** (10% weight): Identical creation dates suggest simultaneous creation or copying, a strong indicator.
-- **EXIF Data** (20% weight, images): Identical EXIF data indicates same source/device, a strong indicator.
-- **Size** (20% weight): Identical sizes suggest duplication, a moderate indicator.
-- **Type** (5% weight): Identical types are a weak indicator but relevant with other matches.
-- **Last Modified Date** (10% weight): Identical modified dates are a weak indicator due to possible legitimate edits.
+The application highlights metadata that may indicate file duplication, helping teachers spot potential academic misconduct (e.g., a student copying another’s work). These are prioritized as follows:
+- **Content Hash** (85% weight): A unique fingerprint of a file’s contents, like a digital ID. If two files have the same content hash, they are identical, strongly suggesting one was copied. This is the most reliable indicator of misconduct.
+- **Creation Date** (10% weight): The exact moment a file was created, down to the millisecond (1/1000th of a second). If two files have the same creation date, they were likely created at the same time or one was copied, making it a strong clue of misconduct.
+- **EXIF Data** (20% weight, images only): Extra information stored in image files, like the camera used or when the photo was taken. If two images have identical EXIF data, they likely came from the same camera or were copied, a strong sign of misconduct.
+- **Size** (20% weight): The file size in bytes. Identical sizes suggest files might be duplicates, especially if other metadata match. This is a moderate clue.
+- **Type** (5% weight): The file type (e.g., JPEG, PDF). Identical types are common but weakly suggest duplication when combined with other matches.
+- **Last Modified Date** (10% weight): When the file was last edited. Identical modified dates may suggest copying, but this is a weak clue since files can be edited legitimately.
 
 Warnings are enhanced to flag potential academic misconduct, with strong indicators (hash, creation date, EXIF, size) highlighted in orange.
 
@@ -45,12 +45,12 @@ Warnings are enhanced to flag potential academic misconduct, with strong indicat
 
 ## Testing
 - Upload identical, modified, and different files to test scoring (hash: 85%, size: 20%, EXIF: 20%, created: 10%, modified: 10%, type: 5%).
-- Ensure metadata (especially creation date, hash, EXIF) is displayed, with warnings highlighting suspicious similarities (e.g., “identical content hashes”).
+- Ensure metadata (especially content hash, creation date, EXIF) is displayed, with warnings highlighting suspicious similarities (e.g., “identical content hashes”).
 - Verify table text wraps properly and the footer remains fixed at the bottom.
 - If the backend fails, the app falls back to client-side analysis (using `lastModified`).
 
 ## Limitations
-- **Creation Date**: Requires backend for `birthtime`; client-side fallback uses `lastModified`.
+- **Creation Date**: Requires backend for `birthtime` (millisecond precision); client-side fallback uses `lastModified`. May be unavailable on ext4 file systems.
 - **GitHub Pages**: Static hosting requires a separate backend.
 - **Metadata Scope**: Limited to basic metadata and EXIF for images.
 - **Render Free Tier**: Services sleep after 15 minutes of inactivity.
