@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const warningsDiv = document.getElementById('warnings');
   const duplicationScore = document.getElementById('duplicationScore');
 
-  // Replace with your actual Render backend URL after deployment
+  // Replace with your actual Render backend URL
   const BACKEND_URL = 'https://file-duplication-backend.onrender.com/upload';
 
   // Enable analyze button when both files are selected
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     properties.forEach(prop => {
       const row = document.createElement('tr');
-      let val1, val2, isSimilar = false;
+      let val1, val2, isSimilar = false, highlightClass = '';
 
       switch (prop) {
         case 'Size (bytes)':
@@ -78,7 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (val1 === val2) {
             score += weights.size;
             isSimilar = true;
-            warnings.push('Files have identical sizes, which may indicate duplication.');
+            highlightClass = 'bg-similar-strong';
+            warnings.push('Files have identical sizes, which may indicate duplication or shared origin. This is a moderate indicator of potential misconduct.');
           }
           break;
         case 'Type':
@@ -87,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (val1 === val2) {
             score += weights.type;
             isSimilar = true;
+            highlightClass = 'bg-similar-weak';
+            warnings.push('Files have identical types, which may support duplication if other metadata match. This is a weak indicator.');
           }
           break;
         case 'Created':
@@ -95,16 +98,18 @@ document.addEventListener('DOMContentLoaded', () => {
           if (val1 === val2 && val1 !== 'N/A') {
             score += weights.created;
             isSimilar = true;
-            warnings.push('Files have identical creation dates, which may suggest copying.');
+            highlightClass = 'bg-similar-strong';
+            warnings.push('Files have identical creation dates, suggesting they were created simultaneously or copied. This is a strong indicator of potential misconduct.');
           }
           break;
         case 'Last Modified':
           val1 = meta1.modified || 'N/A';
-          val2 = meta1.modified || 'N/A';
+          val2 = meta2.modified || 'N/A';
           if (val1 === val2 && val1 !== 'N/A') {
             score += weights.modified;
             isSimilar = true;
-            warnings.push('Files have identical last modified dates, which may suggest copying.');
+            highlightClass = 'bg-similar-weak';
+            warnings.push('Files have identical last modified dates, which may suggest copying or synchronized edits. This is a weak indicator due to possible legitimate edits.');
           }
           break;
         case 'Content Hash':
@@ -113,7 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (val1 === val2) {
             score += weights.hash;
             isSimilar = true;
-            warnings.push('Files have identical content hashes, strongly indicating duplication.');
+            highlightClass = 'bg-similar-strong';
+            warnings.push('Files have identical content hashes, indicating they are identical. This is a very strong indicator of potential academic misconduct.');
           }
           break;
         case 'EXIF Data':
@@ -122,7 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (val1 !== 'N/A' && val1 === val2) {
             score += weights.exif;
             isSimilar = true;
-            warnings.push('Files have identical EXIF data, which may indicate same source.');
+            highlightClass = 'bg-similar-strong';
+            warnings.push('Files have identical EXIF data, suggesting they were taken by the same device or copied. This is a strong indicator of potential misconduct.');
           }
           break;
       }
@@ -133,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="border p-2">${val2}</td>
       `;
       if (isSimilar) {
-        row.classList.add('bg-similar');
+        row.classList.add(highlightClass);
       }
       comparisonTable.appendChild(row);
     });
