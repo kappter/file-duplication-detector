@@ -1,0 +1,13 @@
+/* Custom styles to complement Tailwind */
+body {
+  font-family: 'Inter', sans-serif;
+}
+table {
+  font-size: 0.875rem;
+}
+th, td {
+  padding: 0.5rem;
+}
+.bg-similar {
+  background-color: #fefcbf;
+}
