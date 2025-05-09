@@ -59,12 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const warnings = [];
     let score = 0;
     const weights = {
-      hash: 85,   // Identical content
-      exif: 20,   // Identical EXIF data (images)
-      size: 20,   // Identical size
-      created: 10,// Identical creation date
-      modified: 10, // Identical last modified date
-      type: 5     // Identical type
+      hash: 50,   // Identical content
+      exif: 10,   // Identical EXIF data (images)
+      size: 4,   // Identical size
+      created: 30,// Identical creation date
+      modified: 3, // Identical last modified date
+      type: 3     // Identical type
     };
 
     properties.forEach(prop => {
