@@ -1,60 +1,83 @@
-# File Duplication Detector Frontend
+# File Duplication Detector
 
-## Overview
-This repository contains the frontend for the File Duplication Detector web application, hosted on GitHub Pages. It provides a user interface for teachers to upload two files, send them to a Node.js/Express backend (hosted on Render), and analyze metadata (size, type, creation date, modified date, content hash, EXIF data for images, excluding file name) to estimate duplication probability. A fixed footer includes a copyright notice, and the results table is styled to wrap text properly.
+The File Duplication Detector is a web-based tool designed to compare two files and assess their likelihood of being duplicates, primarily for detecting potential academic misconduct. It analyzes metadata and content, providing a duplication probability score based on weighted comparisons of key properties.
 
-## File Structure
-```
-file-duplication-detector/
-├── index.html
-├── script.js
-├── styles.css
-├── README.md
-```
+## Features
+- **File Upload**: Upload two files (e.g., images, PDFs, documents) via a user-friendly interface.
+- **Metadata Comparison**: Compares file size, type, creation date, last modified date, content hash, and EXIF data (for images).
+- **Duplication Score**: Calculates a percentage score indicating the likelihood of duplication.
+- **Warnings**: Highlights potential indicators of duplication with detailed explanations.
+- **Responsive Design**: Built with Tailwind CSS for a clean, mobile-friendly UI.
+- **Client-Side Fallback**: Extracts metadata client-side if the backend is unavailable.
 
-- **index.html**: Defines the UI with file inputs, an analyze button, a results table, and a fixed footer with a copyright notice. Uses Tailwind CSS and CDNs for `exif-js` and `js-sha256`.
-- **script.js**: Handles file uploads to the backend, extracts EXIF data for images, calculates duplication scores, and displays results with emphasized warnings for suspicious metadata.
-- **styles.css**: Custom CSS to complement Tailwind, styling the table (with text wrapping) and footer.
-- **README.md**: Documentation for setup and deployment.
+## How It Works
+1. **Upload Files**: Select two files using the input fields.
+2. **Backend Analysis**: Files are sent to a Render-hosted backend for metadata extraction (e.g., content hash, creation date). If the backend fails, the tool falls back to client-side analysis.
+3. **EXIF Extraction**: For image files, EXIF data (e.g., camera details, timestamps) is extracted client-side using `exif-js`.
+4. **Comparison**: The tool compares the following properties:
+   - **Content Hash**: SHA-256 hash of file contents.
+   - **Creation Date**: File creation timestamp.
+   - **EXIF Data**: Camera and timestamp data (images only).
+   - **Size**: File size in bytes.
+   - **Last Modified**: Last modified timestamp.
+   - **Type**: File MIME type.
+5. **Duplication Score**: A weighted score is calculated based on matching properties, capped at 100%.
+6. **Results**: A table displays property comparisons, with matching properties highlighted. Warnings explain potential duplication indicators.
 
-## Suspicious Metadata for Duplication
-The application highlights metadata that may indicate file duplication, even after a student has edited or changed a file, helping teachers spot potential academic misconduct (e.g., a student copying another’s work). These are prioritized as follows:
-- **Content Hash** (85% weight): A unique fingerprint of a file’s contents, like a digital ID. If two files have the same content hash, they are identical, strongly suggesting one was copied. This is the most reliable indicator of misconduct.
-- **Creation Date** (10% weight): The exact moment a file was created, down to the millisecond (1/1000th of a second). If two files have the same creation date, they were likely created at the same time or one was copied, making it a strong clue of misconduct. The chance of two separate computers generating files with identical birthtime (down to the millisecond) by chance is extremely low (~1 in 493,827 for 50 students over a week).
-- **EXIF Data** (20% weight, images only): Extra information stored in image files, like the camera used or when the photo was taken. If two images have identical EXIF data, they likely came from the same camera or were copied, a strong sign of misconduct.
-- **Size** (20% weight): The file size in bytes. Identical sizes suggest files might be duplicates, especially if other metadata match. This is a moderate clue.
-- **Type** (5% weight): The file type (e.g., JPEG, PDF). Identical types are common but weakly suggest duplication when combined with other matches.
-- **Last Modified Date** (10% weight): When the file was last edited. Identical modified dates may suggest copying, but this is a weak clue since files can be edited legitimately.
+## Duplication Score Calculation
+The duplication probability score is calculated by assigning weights to each property when they match between the two files. The weights reflect the strength of each property as an indicator of duplication, particularly for academic misconduct detection. The current weights are:
 
-Warnings are enhanced to flag potential academic misconduct, with strong indicators (hash, creation date, EXIF, size) highlighted in orange.
+- **Content Hash**: 50% (identical file contents, the strongest indicator of duplication)
+- **Creation Date**: 30% (identical creation timestamps suggest simultaneous creation or copying)
+- **EXIF Data**: 10% (identical camera/timestamp data for images)
+- **Size**: 4% (identical file sizes, a weak indicator)
+- **Last Modified**: 3% (identical last modified dates, less reliable due to edits)
+- **Type**: 3% (identical file types, a minimal indicator)
 
-## Deployment (Web-Based, No Command Line)
-1. **Create Repository**:
-   - Go to https://github.com/new, name it `file-duplication-detector`, set to Public, and create.
-2. **Add Files**:
-   - Click **Add file** > **Create new file** or **Upload files**.
-   - Upload `index.html`, `script.js`, `styles.css`, `README.md` (copy from provided artifacts).
-   - In `script.js`, set `BACKEND_URL` to your Render URL (e.g., `https://file-duplication-backend.onrender.com/upload`).
-   - Commit to the `main` branch.
-3. **Enable GitHub Pages**:
-   - Go to **Settings** > **Pages**.
-   - Set **Source** to **Deploy from a branch**, **Branch** to `main`, **Folder** to `/ (root)`.
-   - Save and wait for deployment (URL: `https://kappter.github.io/file-duplication-detector`).
-4. **Test**:
-   - Visit the GitHub Pages URL, upload two files, and verify duplication analysis.
+The total score is the sum of weights for matching properties, expressed as a percentage (maximum 100%). For example, if two files have identical content hash and creation date, the score is 50 + 30 = 80%.
 
-## Testing
-- Upload identical, modified, and different files to test scoring (hash: 85%, size: 20%, EXIF: 20%, created: 10%, modified: 10%, type: 5%).
-- Ensure metadata (especially content hash, creation date, EXIF) is displayed, with warnings highlighting suspicious similarities (e.g., “identical content hashes”).
-- Verify table text wraps properly and the footer remains fixed at the bottom.
-- If the backend fails, the app falls back to client-side analysis (using `lastModified`).
+## Installation and Usage
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/kappter/file-duplication-detector.git
+   ```
+2. **Serve the Application**:
+   - Open `index.html` in a browser for local testing.
+   - Alternatively, deploy to a server (e.g., Render, Netlify) and configure the backend URL in `script.js` (`BACKEND_URL`).
+3. **Dependencies**:
+   - No installation required for client-side scripts (loaded via CDN: Tailwind CSS, exif-js, js-sha256).
+   - Backend requires a Node.js server (see `backend` directory for setup).
+4. **Usage**:
+   - Upload two files using the input fields.
+   - Click "Analyze Files" to compare.
+   - Review the results table, duplication score, and warnings.
+   - Note: Large files or complex comparisons may take up to a minute.
+
+## Technical Details
+- **Frontend**: HTML, JavaScript, Tailwind CSS, with client-side libraries (`exif-js`, `js-sha256`).
+- **Backend**: Node.js server (hosted on Render) for metadata extraction and content hashing.
+- **Fallback**: Client-side metadata extraction using JavaScript’s File API and SHA-256 hashing.
+- **Excel Support**: Handles `.xlsx` files using `XLSX` library to filter blank rows and extract CSV data.
+- **Styling**: Custom CSS (`styles.css`) complements Tailwind for table formatting and highlight colors (orange for strong matches, yellow for weak matches).
 
 ## Limitations
-- **Creation Date**: Requires backend for `birthtime` (millisecond precision); client-side fallback uses `lastModified`. May be unavailable on ext4 file systems.
-- **GitHub Pages**: Static hosting requires a separate backend.
-- **Metadata Scope**: Limited to basic metadata and EXIF for images.
-- **Render Free Tier**: Services sleep after 15 minutes of inactivity.
-- **Privacy**: Files are sent to Render; ensure FERPA compliance.
+- Backend availability depends on Render’s free tier, which may spin down with inactivity.
+- Creation and modified dates may not be available for all files (falls back to `N/A`).
+- EXIF data is only applicable to images.
+- Large files may cause delays in processing.
+
+## Contributing
+Contributions are welcome! Please:
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature-name`).
+3. Commit changes (`git commit -m "Add feature"`).
+4. Push to the branch (`git push origin feature-name`).
+5. Open a pull request.
 
 ## License
-© 2025 File Duplication Detector. For educational use only. Not for commercial purposes.
+© 2025 Ken Kapptie. For educational use only. All rights reserved.
+
+## Links
+- [Detailed Info](https://github.com/kappter/file-duplication-detector)
+- [More Tools](https://kappter.github.io/portfolio/#projects)
+- [Custom Solutions](https://kappter.github.io/portfolio/proposal.html)
