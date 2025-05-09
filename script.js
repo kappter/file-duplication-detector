@@ -27,10 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
     duplicationScore.innerHTML = '';
     resultsDiv.classList.remove('hidden');
 
-    // Send files to backend
+    // Send files and lastModified to backend
     const formData = new FormData();
     formData.append('files', file1);
+    formData.append('lastModified', file1.lastModified ? new Date(file1.lastModified).toISOString() : 'N/A');
     formData.append('files', file2);
+    formData.append('lastModified', file2.lastModified ? new Date(file2.lastModified).toISOString() : 'N/A');
     let meta1, meta2;
     try {
       const response = await fetch(BACKEND_URL, {
@@ -39,11 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (!response.ok) throw new Error('Backend request failed');
       [meta1, meta2] = await response.json();
+      console.log('Meta1:', meta1);
+      console.log('Meta2:', meta2);
     } catch (error) {
       warningsDiv.innerHTML = `<strong>Error:</strong> Failed to fetch metadata from server: ${error.message}. Falling back to client-side analysis.`;
-      // Fallback to client-side metadata extraction
       meta1 = await getClientMetadata(file1);
       meta2 = await getClientMetadata(file2);
+      console.log('Client Meta1:', meta1);
+      console.log('Client Meta2:', meta2);
     }
 
     // Extract EXIF data client-side for images
@@ -59,34 +64,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const warnings = [];
     let score = 0;
     const weights = {
-      hash: 50,   // Identical content
-      exif: 10,   // Identical EXIF data (images)
-      size: 4,   // Identical size
-      created: 30,// Identical creation date
-      modified: 3, // Identical last modified date
-      type: 3     // Identical type
+      created: 90, // Base score if creation dates match
+      hash_if_created: 5, // Additional score if hash matches with creation date
+      hash_alone: 50, // Score if hash matches but creation dates don't
+      exif: 2, // Identical EXIF data (images)
+      size: 1, // Identical size
+      modified: 1, // Identical last modified date
+      type: 1 // Identical type
     };
 
     properties.forEach(prop => {
       const row = document.createElement('tr');
       let val1, val2, isSimilar = false, highlightClass = '';
+      let scoreAdjustment = 0;
 
       switch (prop) {
         case 'Size (bytes)':
           val1 = meta1.size;
           val2 = meta2.size;
           if (val1 === val2) {
-            score += weights.size;
+            scoreAdjustment = weights.size;
+            score += scoreAdjustment;
             isSimilar = true;
-            highlightClass = 'bg-similar-strong';
-            warnings.push('Files have identical sizes, which may indicate duplication or shared origin. This is a moderate indicator of potential misconduct.');
+            highlightClass = 'bg-similar-weak';
+            warnings.push('Files have identical sizes, which may indicate duplication or shared origin. This is a weak indicator.');
           }
           break;
         case 'Type':
           val1 = meta1.type;
           val2 = meta2.type;
           if (val1 === val2) {
-            score += weights.type;
+            scoreAdjustment = weights.type;
+            score += scoreAdjustment;
             isSimilar = true;
             highlightClass = 'bg-similar-weak';
             warnings.push('Files have identical types, which may support duplication if other metadata match. This is a weak indicator.');
@@ -96,40 +105,51 @@ document.addEventListener('DOMContentLoaded', () => {
           val1 = meta1.created || 'N/A';
           val2 = meta2.created || 'N/A';
           if (val1 === val2 && val1 !== 'N/A') {
-            score += weights.created;
+            score = weights.created;
             isSimilar = true;
             highlightClass = 'bg-similar-strong';
-            warnings.push('Files have identical creation dates, suggesting they were created simultaneously or copied. This is a strong indicator of potential misconduct.');
+            warnings.push('Files have identical creation dates, strongly suggesting they were created simultaneously or copied. This is a very strong indicator of potential misconduct.');
           }
           break;
         case 'Last Modified':
           val1 = meta1.modified || 'N/A';
           val2 = meta2.modified || 'N/A';
           if (val1 === val2 && val1 !== 'N/A') {
-            score += weights.modified;
+            scoreAdjustment = weights.modified;
+            score += scoreAdjustment;
             isSimilar = true;
             highlightClass = 'bg-similar-weak';
-            warnings.push('Files have identical last modified dates, which may suggest copying or synchronized edits. This is a weak indicator due to possible legitimate edits.');
+            warnings.push('Files have identical last modified dates, which may suggest copying or synchronized edits. This is a weak indicator.');
           }
           break;
         case 'Content Hash':
           val1 = meta1.hash;
           val2 = meta2.hash;
           if (val1 === val2) {
-            score += weights.hash;
+            if (score >= weights.created) { // Creation dates matched
+              scoreAdjustment = weights.hash_if_created;
+              score += scoreAdjustment; // Add 5 to reach 95
+            } else {
+              scoreAdjustment = weights.hash_alone;
+              score += scoreAdjustment; // Add 50 if no creation date match
+            }
             isSimilar = true;
             highlightClass = 'bg-similar-strong';
             warnings.push('Files have identical content hashes, indicating they are identical. This is a very strong indicator of potential academic misconduct.');
+          } else if (score >= weights.created) {
+            score -= 5; // Reduce score if hashes differ but creation dates match
+            warnings.push('Creation dates match, but content hashes differ, suggesting possible edits or different content.');
           }
           break;
         case 'EXIF Data':
           val1 = meta1.exif ? JSON.stringify(meta1.exif, null, 2) : 'N/A';
           val2 = meta2.exif ? JSON.stringify(meta2.exif, null, 2) : 'N/A';
           if (val1 !== 'N/A' && val1 === val2) {
-            score += weights.exif;
+            scoreAdjustment = weights.exif;
+            score += scoreAdjustment;
             isSimilar = true;
             highlightClass = 'bg-similar-strong';
-            warnings.push('Files have identical EXIF data, suggesting they were taken by the same device or copied. This is a strong indicator of potential misconduct.');
+            warnings.push('Files have identical EXIF data, suggesting they were taken by the same device or copied. This is a strong indicator.');
           }
           break;
       }
@@ -163,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name: file.name,
       size: file.size,
       type: file.type,
-      created: 'N/A',
+      created: file.lastModified ? new Date(file.lastModified).toISOString() : 'N/A',
       modified: file.lastModified ? new Date(file.lastModified).toISOString() : 'N/A',
       hash: await getFileHash(file),
       exif: null
