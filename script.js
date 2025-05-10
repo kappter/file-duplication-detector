@@ -8,12 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('tableBody');
     const warningsDiv = document.getElementById('warnings');
 
+    // Detailed logging to identify missing elements
+    if (!fileInput1) console.error('Missing element: fileInput1');
+    if (!fileInput2) console.error('Missing element: fileInput2');
+    if (!analyzeButton) console.error('Missing element: analyzeButton');
+    if (!fileName1) console.error('Missing element: fileName1');
+    if (!fileName2) console.error('Missing element: fileName2');
+    if (!duplicationProbability) console.error('Missing element: duplicationProbability');
+    if (!tableBody) console.error('Missing element: tableBody');
+    if (!warningsDiv) console.error('Missing element: warningsDiv');
+
     if (!analyzeButton || !fileInput1 || !fileInput2 || !fileName1 || !fileName2 || !duplicationProbability || !tableBody || !warningsDiv) {
         console.error('One or more required DOM elements are missing.');
         return;
     }
 
-    // Update file names when selected
+    // Rest of the script remains the same
     fileInput1.addEventListener('change', () => {
         fileName1.textContent = fileInput1.files[0] ? fileInput1.files[0].name : 'no file selected';
     });
@@ -34,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Calculate file properties
             const size1 = file1.size;
             const size2 = file2.size;
             const type1 = file1.type || 'application/octet-stream';
@@ -45,16 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const lastModified2 = file2.lastModified ? new Date(file2.lastModified).toISOString() : 'N/A';
             const contentHash1 = await calculateContentHash(file1);
             const contentHash2 = await calculateContentHash(file2);
-            const exifData1 = 'N/A'; // Placeholder; requires EXIF library for images
+            const exifData1 = 'N/A';
             const exifData2 = 'N/A';
 
-            // Simple duplication probability (based on matching properties)
             const matchingProps = [size1 === size2, type1 === type2, lastModified1 === lastModified2, contentHash1 === contentHash2].filter(Boolean).length;
             const totalProps = 4;
             const probability = (matchingProps / totalProps) * 100;
             duplicationProbability.innerHTML = `<p>Duplication Probability: ${probability.toFixed(2)}%</p>`;
 
-            // Populate table
             const properties = [
                 { name: 'Size (bytes)', value1: size1, value2: size2 },
                 { name: 'Type', value1: type1, value2: type2 },
@@ -74,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tableBody.appendChild(row);
             });
 
-            // Add warnings
             const warnings = [];
             if (type1 === type2) warnings.push('Files have identical types, which may support duplication if other metadata match. This is a weak indicator.');
             if (lastModified1 === lastModified2) warnings.push('Files have identical last modified dates, which may suggest copying or synchronized edits. This is a weak indicator due to possible legitimate edits.');
@@ -92,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const hash = Array.from(new Uint8Array(reader.result))
                     .map(b => b.toString(16).padStart(2, '0'))
                     .join('');
-                resolve(hash.substring(0, 32)); // Limit to 32 chars for brevity
+                resolve(hash.substring(0, 32));
             };
             reader.onerror = () => resolve('Error computing hash');
             reader.readAsArrayBuffer(file);
