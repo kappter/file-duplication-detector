@@ -20,9 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fileInput1.addEventListener('change', () => {
         fileName1.textContent = fileInput1.files[0] ? fileInput1.files[0].name : 'no file selected';
+        toggleButtons();
     });
     fileInput2.addEventListener('change', () => {
         fileName2.textContent = fileInput2.files[0] ? fileInput2.files[0].name : 'no file selected';
+        toggleButtons();
+    });
+    folderInput.addEventListener('change', () => {
+        const fileCount = folderInput.files.length;
+        warningsDiv.innerHTML = `<p>Selected folder contains ${fileCount} files.</p>`;
+        toggleButtons();
     });
 
     analyzeButton.addEventListener('click', async () => {
@@ -34,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         batchResults.classList.add('hidden');
 
         if (!file1 || !file2) {
-            warningsDiv.innerHTML = '<p>Please select both files.</p>';
+            warningsDiv.innerHTML = '<p>Please select two files to analyze.</p>';
             return;
         }
 
@@ -76,6 +83,18 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         URL.revokeObjectURL(url);
     });
+
+    function toggleButtons() {
+        const hasFiles = fileInput1.files.length > 0 && fileInput2.files.length > 0;
+        const hasFolder = folderInput.files.length > 0;
+        analyzeButton.disabled = !hasFiles || hasFolder; // Disable if no files or folder is selected
+        batchScanButton.disabled = !hasFolder; // Disable if no folder
+        if (hasFolder) {
+            analyzeButton.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            analyzeButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
 
     async function compareFiles(file1, file2) {
         const size1 = file1.size;
@@ -178,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < files.length; i++) {
             for (let j = i + 1; j < files.length; j++) {
                 const result = await compareFiles(files[i], files[j]);
-                if (result.probability > 50) { // Only include pairs with high probability
+                if (result.probability > 50) {
                     duplicates.push(result);
                 }
             }
