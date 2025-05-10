@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     folderInput.addEventListener('change', () => {
         const fileCount = folderInput.files.length;
-        warningsDiv.innerHTML = `<p>Selected folder contains ${fileCount} files.</p>`;
+        warningsDiv.innerHTML = `<p>Selected folder contains ${fileCount} files. Use 'Scan Folder for Duplicates' to analyze.</p>`;
         toggleButtons();
     });
 
@@ -42,6 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!file1 || !file2) {
             warningsDiv.innerHTML = '<p>Please select two files to analyze.</p>';
+            return;
+        }
+        if (folderInput.files.length > 0) {
+            warningsDiv.innerHTML = '<p>Folder is selected. Please clear the folder input or use \'Scan Folder for Duplicates\' instead.</p>';
             return;
         }
 
@@ -85,10 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function toggleButtons() {
-        const hasFiles = fileInput1.files.length > 0 && fileInput2.files.length > 0;
+        const hasTwoFiles = fileInput1.files.length === 1 && fileInput2.files.length === 1;
         const hasFolder = folderInput.files.length > 0;
-        analyzeButton.disabled = !hasFiles || hasFolder; // Disable if no files or folder is selected
-        batchScanButton.disabled = !hasFolder; // Disable if no folder
+        analyzeButton.disabled = !hasTwoFiles || hasFolder;
+        batchScanButton.disabled = !hasFolder;
         if (hasFolder) {
             analyzeButton.classList.add('opacity-50', 'cursor-not-allowed');
         } else {
