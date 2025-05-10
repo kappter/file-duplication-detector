@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Rest of the script remains the same
     fileInput1.addEventListener('change', () => {
         fileName1.textContent = fileInput1.files[0] ? fileInput1.files[0].name : 'no file selected';
     });
@@ -57,31 +56,66 @@ document.addEventListener('DOMContentLoaded', () => {
             const exifData1 = 'N/A';
             const exifData2 = 'N/A';
 
-            const matchingProps = [size1 === size2, type1 === type2, lastModified1 === lastModified2, contentHash1 === contentHash2].filter(Boolean).length;
-            const totalProps = 4;
-            const probability = (matchingProps / totalProps) * 100;
-            duplicationProbability.innerHTML = `<p>Duplication Probability: ${probability.toFixed(2)}%</p>`;
+            // Weighted probability calculation
+            const weights = {
+                contentHash: 50,
+                size: 20,
+                lastModified: 15,
+                type: 15
+            };
+            let probability = 0;
+            const breakdown = [];
 
+            if (size1 === size2) {
+                probability += weights.size;
+                breakdown.push(`Size match: +${weights.size}%`);
+            }
+            if (type1 === type2) {
+                probability += weights.type;
+                breakdown.push(`Type match: +${weights.type}%`);
+            }
+            if (lastModified1 === lastModified2) {
+                probability += weights.lastModified;
+                breakdown.push(`Last Modified match: +${weights.lastModified}%`);
+            }
+            if (contentHash1 === contentHash2) {
+                probability += weights.contentHash;
+                breakdown.push(`Content Hash match: +${weights.contentHash}%`);
+            }
+
+            // Display probability with breakdown
+            duplicationProbability.innerHTML = `
+                <p class="text-lg font-semibold">Duplication Probability: ${probability.toFixed(2)}%</p>
+                <p class="text-sm text-gray-600">Breakdown:</p>
+                <ul class="list-disc list-inside text-sm text-gray-600">
+                    ${breakdown.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            `;
+
+            // Populate table with highlighted content hash row
             const properties = [
                 { name: 'Size (bytes)', value1: size1, value2: size2 },
                 { name: 'Type', value1: type1, value2: type2 },
                 { name: 'Created', value1: created1, value2: created2 },
                 { name: 'Last Modified', value1: lastModified1, value2: lastModified2 },
-                { name: 'Content Hash', value1: contentHash1, value2: contentHash2 },
+                { name: 'Content Hash', value1: contentHash1, value2: contentHash2, highlight: true },
                 { name: 'EXIF Data', value1: exifData1, value2: exifData2 }
             ];
 
             properties.forEach(prop => {
                 const row = document.createElement('tr');
+                const highlightClass = prop.highlight ? 'bg-green-100 font-semibold' : '';
                 row.innerHTML = `
-                    <td class="border p-2">${prop.name}</td>
-                    <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''}">${prop.value1}</td>
-                    <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''}">${prop.value2}</td>
+                    <td class="border p-2 ${highlightClass}">${prop.name}</td>
+                    <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''} ${highlightClass}">${prop.value1}</td>
+                    <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''} ${highlightClass}">${prop.value2}</td>
                 `;
                 tableBody.appendChild(row);
             });
 
+            // Add warnings and highlight importance of content hash
             const warnings = [];
+            warnings.push('Content Hash is the most reliable indicator of duplication. A mismatch strongly suggests the files are different.');
             if (type1 === type2) warnings.push('Files have identical types, which may support duplication if other metadata match. This is a weak indicator.');
             if (lastModified1 === lastModified2) warnings.push('Files have identical last modified dates, which may suggest copying or synchronized edits. This is a weak indicator due to possible legitimate edits.');
             if (warnings.length) warningsDiv.innerHTML = `<p>Warnings:</p><p>${warnings.join(' ')}</p>`;
