@@ -20,20 +20,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fileInput1.addEventListener('change', () => {
         fileName1.textContent = fileInput1.files[0] ? fileInput1.files[0].name : 'no file selected';
+        // Clear folder input when selecting individual files
+        folderInput.value = '';
+        warningsDiv.innerHTML = '';
         toggleButtons();
     });
     fileInput2.addEventListener('change', () => {
         fileName2.textContent = fileInput2.files[0] ? fileInput2.files[0].name : 'no file selected';
+        // Clear folder input when selecting individual files
+        folderInput.value = '';
+        warningsDiv.innerHTML = '';
         toggleButtons();
     });
     folderInput.addEventListener('change', () => {
         const fileCount = folderInput.files.length;
         warningsDiv.innerHTML = `<p>Selected folder contains ${fileCount} files.</p>`;
+        // Clear individual file inputs when selecting a folder
+        fileInput1.value = '';
+        fileInput2.value = '';
+        fileName1.textContent = 'no file selected';
+        fileName2.textContent = 'no file selected';
         toggleButtons();
     });
 
     analyzeButton.addEventListener('click', async () => {
-        console.log('Analyze button clicked'); // Debug log
+        console.log('Analyze button clicked');
         const file1 = fileInput1.files[0];
         const file2 = fileInput2.files[0];
         tableBody.innerHTML = '';
@@ -88,14 +99,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleButtons() {
         const hasFiles = fileInput1.files.length > 0 && fileInput2.files.length > 0;
         const hasFolder = folderInput.files.length > 0;
-        analyzeButton.disabled = !hasFiles || hasFolder;
+        // Enable analyzeButton only if both files are selected and no folder is selected
+        analyzeButton.disabled = !hasFiles;
         batchScanButton.disabled = !hasFolder;
-        if (hasFolder) {
+        // Apply visual feedback only when disabled
+        if (analyzeButton.disabled) {
             analyzeButton.classList.add('opacity-50', 'cursor-not-allowed');
         } else {
             analyzeButton.classList.remove('opacity-50', 'cursor-not-allowed');
         }
-        console.log(`Analyze Button disabled: ${analyzeButton.disabled}, Has Files: ${hasFiles}, Has Folder: ${hasFolder}`); // Debug log
+        if (batchScanButton.disabled) {
+            batchScanButton.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            batchScanButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        console.log(`Analyze Button disabled: ${analyzeButton.disabled}, Has Files: ${hasFiles}, Has Folder: ${hasFolder}`);
     }
 
     async function compareFiles(file1, file2) {
