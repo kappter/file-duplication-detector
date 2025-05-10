@@ -1,57 +1,65 @@
-
-const fs = require('fs');
-const crypto = require('crypto');
-const path = require('path');
-
-function calculateFileHash(filePath) {
-  const fileBuffer = fs.readFileSync(filePath);
-  const hashSum = crypto.createHash('sha256');
-  hashSum.update(fileBuffer);
-  return hashSum.digest('hex');
-}
-
-function findDuplicates(directory) {
-  const fileHashes = new Map();
-  const duplicates = new Map();
-
-  function scanDirectory(dir) {
-    const files = fs.readdirSync(dir);
-    
-    files.forEach(file => {
-      const fullPath = path.join(dir, file);
-      const stats = fs.statSync(fullPath);
-      
-      if (stats.isDirectory()) {
-        scanDirectory(fullPath);
-      } else {
-        const hash = calculateFileHash(fullPath);
-        
-        if (fileHashes.has(hash)) {
-          const duplicateList = duplicates.get(hash) || [fileHashes.get(hash)];
-          duplicateList.push(fullPath);
-          duplicates.set(hash, duplicateList);
-        } else {
-          fileHashes.set(hash, fullPath);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Duplication Detector</title>
+    <link href="dist/output.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #1a202c;
+            color: #a0aec0;
+            padding: 1rem;
+            text-align: center;
+            z-index: 10;
         }
-      }
-    });
-  }
-
-  scanDirectory(directory);
-  return duplicates;
-}
-
-// Example usage
-const targetDir = process.argv[2] || '.';
-console.log(`Scanning directory: ${targetDir}`);
-
-const duplicates = findDuplicates(targetDir);
-if (duplicates.size === 0) {
-  console.log('No duplicate files found.');
-} else {
-  console.log('\nDuplicate files found:');
-  duplicates.forEach((files, hash) => {
-    console.log(`\nHash: ${hash}`);
-    files.forEach(file => console.log(`- ${file}`));
-  });
-}
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <div class="flex-grow max-w-[900px] mx-auto p-4">
+        <div class="bg-white rounded shadow p-4">
+            <h1 class="text-3xl font-bold mb-4 text-center">File Duplication Detector</h1>
+            <div class="mb-4 flex justify-between">
+                <div>
+                    <label for="fileInput1" class="mr-2">File 1</label>
+                    <input type="file" id="fileInput1" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
+                    <span id="fileName1" class="ml-2"></span>
+                </div>
+                <div>
+                    <label for="fileInput2" class="mr-2">File 2</label>
+                    <input type="file" id="fileInput2" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
+                    <span id="fileName2" class="ml-2"></span>
+                </div>
+            </div>
+            <button id="analyzeButton" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Analyze Files</button>
+            <div id="results" class="mt-4">
+                <h2 class="text-xl font-semibold">Duplication Analysis</h2>
+                <div id="duplicationProbability" class="mt-2"></div>
+                <table id="comparisonTable" class="w-full mt-2 text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="border p-2">Property</th>
+                            <th class="border p-2">File 1</th>
+                            <th class="border p-2">File 2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div id="warnings" class="mt-2 text-yellow-600 bg-yellow-100 p-2 rounded"></div>
+            </div>
+        </div>
+    </div>
+    <footer class="fixed-footer">
+        <p>© 2025 Ken Kappie | File Duplication Detector. For educational use only. All rights reserved.</p>
+        <p>Please be patient as requests can take up to a minute depending on the file size and complexity.</p>
+        <p>Detailed info on app | More tools like this | Want your own?</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
