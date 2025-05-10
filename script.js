@@ -56,31 +56,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const exifData1 = 'N/A';
             const exifData2 = 'N/A';
 
-            // Weighted probability calculation
-            const weights = {
-                contentHash: 50,
-                size: 20,
-                lastModified: 15,
-                type: 15
-            };
+            // Convert created dates to timestamps for comparison
+            const createdTime1 = file1.lastModified ? new Date(file1.lastModified).getTime() : null;
+            const createdTime2 = file2.lastModified ? new Date(file2.lastModified).getTime() : null;
+            const isCreatedMatch = createdTime1 && createdTime2 && Math.abs(createdTime1 - createdTime2) < 1000; // Within 1 second
+
+            // Probability calculation with Created date as major factor
             let probability = 0;
             const breakdown = [];
 
-            if (size1 === size2) {
-                probability += weights.size;
-                breakdown.push(`Size match: +${weights.size}%`);
-            }
-            if (type1 === type2) {
-                probability += weights.type;
-                breakdown.push(`Type match: +${weights.type}%`);
-            }
-            if (lastModified1 === lastModified2) {
-                probability += weights.lastModified;
-                breakdown.push(`Last Modified match: +${weights.lastModified}%`);
-            }
             if (contentHash1 === contentHash2) {
-                probability += weights.contentHash;
-                breakdown.push(`Content Hash match: +${weights.contentHash}%`);
+                probability = 100;
+                breakdown.push('Content Hash match: 100% (Files are identical)');
+            } else {
+                const weights = {
+                    created: 30,    // Major factor as per your input
+                    size: 30,
+                    lastModified: 20,
+                    type: 20
+                };
+                if (isCreatedMatch) {
+                    probability += weights.created;
+                    breakdown.push(`Created match: +${weights.created}%`);
+                }
+                if (size1 === size2) {
+                    probability += weights.size;
+                    breakdown.push(`Size match: +${weights.size}%`);
+                }
+                if (type1 === type2) {
+                    probability += weights.type;
+                    breakdown.push(`Type match: +${weights.type}%`);
+                }
+                if (lastModified1 === lastModified2) {
+                    probability += weights.lastModified;
+                    breakdown.push(`Last Modified match: +${weights.lastModified}%`);
+                }
+                // Cap probability at 90% if hashes differ, as content is definitive
+                probability = Math.min(probability, 90);
             }
 
             // Display probability with breakdown
@@ -92,11 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </ul>
             `;
 
-            // Populate table with highlighted content hash row
+            // Populate table with highlighted content hash and created rows
             const properties = [
                 { name: 'Size (bytes)', value1: size1, value2: size2 },
                 { name: 'Type', value1: type1, value2: type2 },
-                { name: 'Created', value1: created1, value2: created2 },
+                { name: 'Created', value1: created1, value2: created2, highlight: isCreatedMatch },
                 { name: 'Last Modified', value1: lastModified1, value2: lastModified2 },
                 { name: 'Content Hash', value1: contentHash1, value2: contentHash2, highlight: true },
                 { name: 'EXIF Data', value1: exifData1, value2: exifData2 }
@@ -113,9 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 tableBody.appendChild(row);
             });
 
-            // Add warnings and highlight importance of content hash
+            // Add warnings and highlight importance
             const warnings = [];
-            warnings.push('Content Hash is the most reliable indicator of duplication. A mismatch strongly suggests the files are different.');
+            if (contentHash1 === contentHash2) {
+                warnings.push('Content Hash match confirms these files are identical duplicates.');
+            } else {
+                warnings.push('Content Hash mismatch indicates these files are not identical, despite similar metadata.');
+            }
+            if (isCreatedMatch) warnings.push('Files have identical Created dates, a strong indicator of duplication.');
             if (type1 === type2) warnings.push('Files have identical types, which may support duplication if other metadata match. This is a weak indicator.');
             if (lastModified1 === lastModified2) warnings.push('Files have identical last modified dates, which may suggest copying or synchronized edits. This is a weak indicator due to possible legitimate edits.');
             if (warnings.length) warningsDiv.innerHTML = `<p>Warnings:</p><p>${warnings.join(' ')}</p>`;
@@ -126,16 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function calculateContentHash(file) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const hash = Array.from(new Uint8Array(reader.result))
-                    .map(b => b.toString(16).padStart(2, '0'))
-                    .join('');
-                resolve(hash.substring(0, 32));
-            };
-            reader.onerror = () => resolve('Error computing hash');
-            reader.readAsArrayBuffer(file);
-        });
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        } catch (error) {
+            console.error('Hash computation error:', error);
+            return 'Error computing hash';
+        }
     }
 });
