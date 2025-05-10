@@ -70,14 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 breakdown.push('Content Hash match: 100% (Files are identical)');
             } else {
                 const weights = {
-                    created: 30,    // Major factor as per your input
-                    size: 30,
-                    lastModified: 20,
-                    type: 20
+                    created: 70,    // Major factor due to statistical rarity
+                    size: 10,
+                    lastModified: 10,
+                    type: 10
                 };
                 if (isCreatedMatch) {
                     probability += weights.created;
-                    breakdown.push(`Created match: +${weights.created}%`);
+                    breakdown.push(`Created match: +${weights.created}% (Extremely strong indicator)`);
                 }
                 if (size1 === size2) {
                     probability += weights.size;
@@ -91,8 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     probability += weights.lastModified;
                     breakdown.push(`Last Modified match: +${weights.lastModified}%`);
                 }
-                // Cap probability at 90% if hashes differ, as content is definitive
-                probability = Math.min(probability, 90);
+                // Cap probability at 95% if hashes differ
+                probability = Math.min(probability, 95);
             }
 
             // Display probability with breakdown
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 warnings.push('Content Hash mismatch indicates these files are not identical, despite similar metadata.');
             }
-            if (isCreatedMatch) warnings.push('Files have identical Created dates, a strong indicator of duplication.');
+            if (isCreatedMatch) warnings.push('Files have identical Created dates, an extremely strong indicator of duplication due to the rarity of timestamp matches across systems.');
             if (type1 === type2) warnings.push('Files have identical types, which may support duplication if other metadata match. This is a weak indicator.');
             if (lastModified1 === lastModified2) warnings.push('Files have identical last modified dates, which may suggest copying or synchronized edits. This is a weak indicator due to possible legitimate edits.');
             if (warnings.length) warningsDiv.innerHTML = `<p>Warnings:</p><p>${warnings.join(' ')}</p>`;
