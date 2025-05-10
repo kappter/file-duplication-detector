@@ -1,6 +1,6 @@
 # File Duplication Detector
 
-Welcome to the **File Duplication Detector**, a powerful web-based tool designed to identify duplicate files by analyzing key metadata and content. This project, created by Ken Kappie, leverages advanced probability calculations to determine file similarity, with a special emphasis on the "Created" date as a major indicator of duplication.
+Welcome to the **File Duplication Detector**, a powerful web-based tool designed to identify duplicate files by analyzing key metadata and content. This project, created by Ken Kapptie, leverages advanced probability calculations to determine file similarity, with a special emphasis on the "Created" date as a major indicator of duplication.
 
 ## Overview
 
