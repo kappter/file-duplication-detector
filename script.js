@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput1.addEventListener('change', () => {
         fileName1.textContent = fileInput1.files[0] ? fileInput1.files[0].name : 'no file selected';
         console.log('fileInput1 changed:', fileInput1.files.length, fileInput1.files[0]?.name);
-        // Clear folder input
         folderInput.value = '';
         warningsDiv.innerHTML = '';
         toggleButtons();
@@ -29,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput2.addEventListener('change', () => {
         fileName2.textContent = fileInput2.files[0] ? fileInput2.files[0].name : 'no file selected';
         console.log('fileInput2 changed:', fileInput2.files.length, fileInput2.files[0]?.name);
-        // Clear folder input
         folderInput.value = '';
         warningsDiv.innerHTML = '';
         toggleButtons();
@@ -38,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fileCount = folderInput.files.length;
         console.log('folderInput changed:', fileCount);
         warningsDiv.innerHTML = `<p>Selected folder contains ${fileCount} files.</p>`;
-        // Clear individual file inputs
         fileInput1.value = '';
         fileInput2.value = '';
         fileName1.textContent = 'no file selected';
@@ -60,8 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const result = await compareFiles(file1, file2);
-        displayComparison(result);
+        try {
+            const result = await compareFiles(file1, file2);
+            console.log('Comparison result:', result);
+            displayComparison(result);
+        } catch (error) {
+            console.error('Error during comparison:', error);
+            warningsDiv.innerHTML = '<p class="text-red-600">Error analyzing files: ' + error.message + '</p>';
+        }
     });
 
     batchScanButton.addEventListener('click', async () => {
@@ -118,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function compareFiles(file1, file2) {
+        console.log('Starting compareFiles for:', file1.name, file2.name);
         const size1 = file1.size;
         const size2 = file2.size;
         const type1 = file1.type || 'application/octet-stream';
@@ -128,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastModified2 = file2.lastModified ? new Date(file2.lastModified).toISOString() : 'N/A';
         const contentHash1 = await calculateContentHash(file1);
         const contentHash2 = await calculateContentHash(file2);
+        console.log('Hashes computed:', contentHash1, contentHash2);
         const exifData1 = 'N/A';
         const exifData2 = 'N/A';
 
@@ -191,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayComparison(result) {
+        console.log('Displaying comparison result:', result);
         duplicationProbability.innerHTML = `
             <p class="text-lg font-semibold">Duplication Probability: ${result.probability.toFixed(2)}%</p>
             <p class="text-sm text-gray-600">Breakdown:</p>
@@ -210,7 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
             tableBody.appendChild(row);
         });
 
-        if (result.warnings.length) warningsDiv.innerHTML = `<p>Warnings:</p><p>${result.warnings.join(' ')}</p>`;
+        if (result.warnings.length) {
+            warningsDiv.innerHTML = `<p>Warnings:</p><p>${result.warnings.join(' ')}</p>`;
+        }
+        console.log('DOM updated with comparison results');
     }
 
     async function findDuplicates(files) {
@@ -252,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return hashHex;
         } catch (error) {
             console.error('Hash computation error:', error);
-            return 'Error computing hash';
+            throw new Error('Failed to compute content hash');
         }
     }
 });
