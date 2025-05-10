@@ -57,6 +57,10 @@
             text-align: center;
             z-index: 10;
         }
+        .disabled-section {
+            opacity: 0.5;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
@@ -81,9 +85,12 @@
             </div>
             <div class="mb-4">
                 <h2 class="text-xl font-semibold mb-2">Batch Scan Folder</h2>
-                <label for="folderInput" class="mr-2">Select Folder</label>
-                <input type="file" id="folderInput" webkitdirectory directory class="border p-2 rounded">
-                <button id="batchScanButton" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-2">Scan Folder for Duplicates</button>
+                <p class="text-gray-600 mb-2">Feature Coming Soon!</p>
+                <div class="disabled-section">
+                    <label for="folderInput" class="mr-2">Select Folder</label>
+                    <input type="file" id="folderInput" webkitdirectory directory class="border p-2 rounded" disabled>
+                    <button id="batchScanButton" class="w-full bg-green-500 text-white px-4 py-2 rounded mt-2" disabled>Scan Folder for Duplicates</button>
+                </div>
             </div>
             <div id="results" class="mt-4">
                 <h2 class="text-xl font-semibold">Duplication Analysis</h2>
