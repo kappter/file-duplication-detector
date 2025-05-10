@@ -10,41 +10,41 @@
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto p-4 max-w-2xl bg-white rounded shadow">
-        <h1 class="text-3xl font-bold mb-4 text-center">File Duplication Detector</h1>
-        <div class="mb-4 flex justify-between">
-            <div>
-                <label for="fileInput1" class="mr-2">File 1</label>
-                <input type="file" id="fileInput1" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
-                <span id="fileName1" class="ml-2"></span>
-            </div>
-            <div>
-                <label for="fileInput2" class="mr-2">File 2</label>
-                <input type="file" id="fileInput2" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
-                <span id="fileName2" class="ml-2"></span>
-            </div>
+    <h1 class="text-3xl font-bold mb-4 text-center">File Duplication Detector</h1>
+    <div class="mb-4 flex justify-between">
+        <div>
+            <label for="fileInput1" class="mr-2">File 1</label>
+            <input type="file" id="fileInput1" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
+            <span id="fileName1" class="ml-2"></span>
         </div>
-        <button id="analyzeButton" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Analyze Files</button>
-        <div id="results" class="mt-4">
-            <h2 class="text-xl font-semibold">Duplication Analysis</h2>
-            <div id="duplicationProbability" class="mt-2"></div>
-            <table id="comparisonTable" class="w-full mt-2 text-left border-collapse">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="border p-2">Property</th>
-                        <th class="border p-2">File 1</th>
-                        <th class="border p-2">File 2</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-            <div id="warnings" class="mt-2 text-yellow-600 bg-yellow-100 p-2 rounded"></div>
+        <div>
+            <label for="fileInput2" class="mr-2">File 2</label>
+            <input type="file" id="fileInput2" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
+            <span id="fileName2" class="ml-2"></span>
         </div>
-        <footer class="mt-4 text-center text-gray-600">
-            <p>© 2025 Ken Kappie | File Duplication Detector. For educational use only. All rights reserved.</p>
-            <p>Please be patient as requests can take up to a minute depending on the file size and complexity.</p>
-            <p>Detailed info on app | More tools like this | Want your own?</p>
-        </footer>
     </div>
+    <button id="analyzeButton" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Analyze Files</button>
+    <div id="results" class="mt-4">
+        <h2 class="text-xl font-semibold">Duplication Analysis</h2>
+        <div id="duplicationProbability" class="mt-2"></div>
+        <table id="comparisonTable" class="w-full mt-2 text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border p-2">Property</th>
+                    <th class="border p-2">File 1</th>
+                    <th class="border p-2">File 2</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div id="warnings" class="mt-2 text-yellow-600 bg-yellow-100 p-2 rounded"></div>
+    </div>
+    <footer class="mt-4 text-center text-gray-600">
+        <p>© 2025 Ken Kappie | File Duplication Detector. For educational use only. All rights reserved.</p>
+        <p>Please be patient as requests can take up to a minute depending on the file size and complexity.</p>
+        <p>Detailed info on app | More tools like this | Want your own?</p>
+    </footer>
+</div>
     <script src="script.js"></script>
 </body>
 </html>
