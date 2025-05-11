@@ -208,10 +208,21 @@ document.addEventListener('DOMContentLoaded', () => {
         result.properties.forEach(prop => {
             const row = document.createElement('tr');
             const highlightClass = prop.highlight ? 'bg-green-100 font-semibold' : '';
+            let value1Display = prop.value1;
+            let value2Display = prop.value2;
+
+            // Truncate content hash to 10 characters and add hover for full hash
+            if (prop.name === 'Content Hash') {
+                value1Display = prop.value1.length > 10 ? `${prop.value1.substring(0, 10)}...` : prop.value1;
+                value2Display = prop.value2.length > 10 ? `${prop.value2.substring(0, 10)}...` : prop.value2;
+                value1Display = `<span class="hash-truncated" title="${prop.value1}">${value1Display}</span>`;
+                value2Display = `<span class="hash-truncated" title="${prop.value2}">${value2Display}</span>`;
+            }
+
             row.innerHTML = `
                 <td class="border p-2 ${highlightClass}">${prop.name}</td>
-                <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''} ${highlightClass}">${prop.value1}</td>
-                <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''} ${highlightClass}">${prop.value2}</td>
+                <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''} ${highlightClass}">${value1Display}</td>
+                <td class="border p-2 ${prop.value1 === prop.value2 ? 'bg-yellow-100' : ''} ${highlightClass}">${value2Display}</td>
             `;
             tableBody.appendChild(row);
         });
