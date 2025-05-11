@@ -12,8 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const batchResults = document.getElementById('batchResults');
     const batchTableBody = document.getElementById('batchTableBody');
     const downloadReportButton = document.getElementById('downloadReportButton');
+    const resultsSection = document.getElementById('results');
 
-    if (!fileInput1 || !fileInput2 || !analyzeButton || !fileName1 || !fileName2 || !duplicationProbability || !tableBody || !warningsDiv || !folderInput || !batchScanButton || !batchResults || !batchTableBody || !downloadReportButton) {
+    if (!fileInput1 || !fileInput2 || !analyzeButton || !fileName1 || !fileName2 || !duplicationProbability || !tableBody || !warningsDiv || !folderInput || !batchScanButton || !batchResults || !batchTableBody || !downloadReportButton || !resultsSection) {
         console.error('One or more required DOM elements are missing.');
         return;
     }
@@ -85,13 +86,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     downloadReportButton.addEventListener('click', () => {
-        const rows = batchTableBody.querySelectorAll('tr');
-        let reportText = 'File Duplication Detector - Batch Scan Report\n\n';
-        reportText += 'File Pair\tProbability\tDetails\n';
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            reportText += `${cells[0].textContent}\t${cells[1].textContent}\t${cells[2].textContent}\n`;
-        });
+        let reportText = 'File Duplication Detector - Report\n\n';
+
+        // Check if batch results are visible
+        if (!batchResults.classList.contains('hidden')) {
+            const rows = batchTableBody.querySelectorAll('tr');
+            if (rows.length > 0) {
+                reportText += 'Batch Scan Report\nFile Pair\tProbability\tDetails\n';
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    reportText += `${cells[0].textContent}\t${cells[1].textContent}\t${cells[2].textContent}\n`;
+                });
+            } else {
+                reportText += 'No batch scan results available.\n';
+            }
+        } 
+        // Check if two-file results are visible
+        else if (!resultsSection.classList.contains('hidden')) {
+            const probability = duplicationProbability.textContent.trim();
+            if (tableBody.children.length > 0) {
+                reportText += 'Two-File Comparison Report\n';
+                reportText += `Duplication Probability: ${probability}\n\n`;
+                reportText += 'Property\tFile 1\tFile 2\n';
+                const rows = tableBody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    reportText += `${cells[0].textContent}\t${cells[1].textContent.replace(/<[^>]+>/g, '')}\t${cells[2].textContent.replace(/<[^>]+>/g, '')}\n`;
+                });
+                const warnings = warningsDiv.textContent.trim();
+                if (warnings) reportText += `\nWarnings: ${warnings}\n`;
+            } else {
+                reportText += 'No two-file comparison results available.\n';
+            }
+        } else {
+            reportText += 'No results available to download.\n';
+        }
 
         const blob = new Blob([reportText], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
