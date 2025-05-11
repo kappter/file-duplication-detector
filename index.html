@@ -46,6 +46,35 @@
     <link href="dist/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+        }
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .file-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .file-input-pair {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .button {
+            width: 100%;
+        }
+        .results-table {
+            width: 100%;
+            overflow-x: auto;
+        }
         .fixed-footer {
             position: fixed;
             bottom: 0;
@@ -53,84 +82,100 @@
             width: 100%;
             background-color: #1a202c;
             color: #a0aec0;
-            padding: 1rem;
+            padding: 0.5rem;
             text-align: center;
+            font-size: 0.875rem;
             z-index: 10;
         }
         .disabled-section {
             opacity: 0.5;
             pointer-events: none;
         }
+        @media (max-width: 600px) {
+            .file-input-pair {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .file-inputs, .results-table {
+                font-size: 0.875rem;
+            }
+            .fixed-footer {
+                font-size: 0.75rem;
+                padding: 0.25rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
-    <div class="flex-grow max-w-[900px] mx-auto p-4">
-        <div class="bg-white rounded shadow p-4">
+    <div class="flex-grow">
+        <div class="container bg-white rounded shadow p-4">
             <h1 class="text-3xl font-bold mb-4 text-center">File Duplication Detector</h1>
-            <div class="mb-4">
-                <h2 class="text-xl font-semibold mb-2">Compare Two Files (Canvas batch download overwrites created date, do individual)</h2>
-                <div class="flex justify-between">
-                    <div>
+            <div class="mb-4 flex-col">
+                <h2 class="text-xl font-semibold mb-2">Compare Two Files</h2>
+                <div class="file-inputs">
+                    <div class="file-input-pair">
                         <label for="fileInput1" class="mr-2">File 1</label>
                         <input type="file" id="fileInput1" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
-                        <span id="fileName1" class="ml-2"></span>
+                        <span id="fileName1" class="ml-2 whitespace-normal break-words"></span>
                     </div>
-                    <div>
+                    <div class="file-input-pair">
                         <label for="fileInput2" class="mr-2">File 2</label>
                         <input type="file" id="fileInput2" class="border p-2 rounded" accept=".txt,.csv,.xlsx,.pde">
-                        <span id="fileName2" class="ml-2"></span>
+                        <span id="fileName2" class="ml-2 whitespace-normal break-words"></span>
                     </div>
                 </div>
-                <button id="analyzeButton" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Analyze Files</button>
+                <button id="analyzeButton" class="button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Analyze Files</button>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 flex-col">
                 <h2 class="text-xl font-semibold mb-2">Batch Scan Folder</h2>
                 <p class="text-gray-600 mb-2">Feature Coming Soon!</p>
                 <div class="disabled-section">
-                    <label for="folderInput" class="mr-2">Select Folder</label>
-                    <input type="file" id="folderInput" webkitdirectory directory class="border p-2 rounded" disabled>
-                    <button id="batchScanButton" class="w-full bg-green-500 text-white px-4 py-2 rounded mt-2" disabled>Scan Folder for Duplicates</button>
+                    <div class="file-input-pair">
+                        <label for="folderInput" class="mr-2">Select Folder</label>
+                        <input type="file" id="folderInput" webkitdirectory directory class="border p-2 rounded" disabled>
+                    </div>
+                    <button id="batchScanButton" class="button bg-green-500 text-white px-4 py-2 rounded mt-2" disabled>Scan Folder for Duplicates</button>
                 </div>
             </div>
-            <div id="results" class="mt-4">
+            <div id="results" class="mt-4 flex-col">
                 <h2 class="text-xl font-semibold">Duplication Analysis</h2>
                 <div id="duplicationProbability" class="mt-2"></div>
-                <table id="comparisonTable" class="w-full mt-2 text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="border p-2">Property</th>
-                            <th class="border p-2">File 1</th>
-                            <th class="border p-2">File 2</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
+                <div class="results-table">
+                    <table id="comparisonTable" class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="border p-2">Property</th>
+                                <th class="border p-2">File 1</th>
+                                <th class="border p-2">File 2</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
                 <div id="warnings" class="mt-2 text-yellow-600 bg-yellow-100 p-2 rounded"></div>
             </div>
-            <div id="batchResults" class="mt-4 hidden">
+            <div id="batchResults" class="mt-4 flex-col hidden">
                 <h2 class="text-xl font-semibold">Batch Scan Report</h2>
-                <table id="batchTable" class="w-full mt-2 text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="border p-2">File Pair</th>
-                            <th class="border p-2">Probability</th>
-                            <th class="border p-2">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody id="batchTableBody"></tbody>
-                </table>
-                <button id="downloadReportButton" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Download Report</button>
+                <div class="results-table">
+                    <table id="batchTable" class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="border p-2">File Pair</th>
+                                <th class="border p-2">Probability</th>
+                                <th class="border p-2">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batchTableBody"></tbody>
+                    </table>
+                </div>
+                <button id="downloadReportButton" class="button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Download Report</button>
             </div>
         </div>
     </div>
     <footer class="fixed-footer">
         <p>© 2025 Ken Kappie | File Duplication Detector. For educational use only. All rights reserved.</p>
-        <p>Please be patient as requests can take up to a minute depending on the file size and complexity.</p>
-        <div class="donation-links">
-            <a href="https://github.com/kappter/file-duplication-detector/">Detailed info on app | </a>
-            <a href="https://kappter.github.io/portfolio/#projects" target="_blank">More tools like this | </a>
-            <a href="https://kappter.github.io/portfolio/proposal.html">Want your own?</a>  
-        </div>
+        <p>Please be patient as requests can take up to a minute depending on file size and complexity.</p>
+        <p>Detailed info on app | More tools like this | Want your own?</p>
     </footer>
     <script src="script.js"></script>
 </body>
