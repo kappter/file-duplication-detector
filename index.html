@@ -95,6 +95,14 @@
             border-bottom: 1px dotted #000;
             cursor: help;
         }
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: underline;
+            margin: 0 0.25rem;
+        }
+        .footer-links a:hover {
+            color: #cbd5e0;
+        }
         @media (max-width: 600px) {
             .file-input-pair {
                 flex-direction: column;
@@ -106,6 +114,10 @@
             .fixed-footer {
                 font-size: 0.75rem;
                 padding: 0.25rem;
+            }
+            .footer-links a {
+                display: block;
+                margin: 0.25rem 0;
             }
         }
     </style>
@@ -179,7 +191,11 @@
     <footer class="fixed-footer">
         <p>© 2025 Ken Kappie | File Duplication Detector. For educational use only. All rights reserved.</p>
         <p>Please be patient as requests can take up to a minute depending on file size and complexity.</p>
-        <p>Detailed info on app | More tools like this | Want your own?</p>
+        <p class="footer-links">
+            <a href="https://example.com/info" target="_blank">Detailed info on app</a> |
+            <a href="https://example.com/tools" target="_blank">More tools like this</a> |
+            <a href="https://example.com/contact" target="_blank">Want your own?</a>
+        </p>
     </footer>
     <script src="script.js"></script>
 </body>
