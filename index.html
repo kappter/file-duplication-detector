@@ -50,7 +50,6 @@
             max-width: 900px;
             margin: 0 auto;
             padding: 1rem;
-            padding-bottom: 6rem; /* Added padding to account for footer height */
             width: 100%;
         }
         .flex-col {
@@ -71,24 +70,18 @@
         }
         .button {
             width: 100%;
-            position: relative;
-            z-index: 1; /* Ensure button is above footer */
         }
         .results-table {
             width: 100%;
             overflow-x: auto;
         }
-        .fixed-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+        .footer {
             background-color: #1a202c;
             color: #a0aec0;
-            padding: 0.25rem; /* Reduced padding to minimize height */
+            padding: 0.5rem;
             text-align: center;
             font-size: 0.875rem;
-            z-index: 0; /* Ensure footer is below buttons */
+            width: 100%;
         }
         .disabled-section {
             opacity: 0.5;
@@ -114,16 +107,13 @@
             .file-inputs, .results-table {
                 font-size: 0.875rem;
             }
-            .fixed-footer {
+            .footer {
                 font-size: 0.75rem;
-                padding: 0.125rem; /* Further reduced padding on mobile */
+                padding: 0.25rem;
             }
             .footer-links a {
                 display: block;
                 margin: 0.125rem 0;
-            }
-            .container {
-                padding-bottom: 5rem; /* Adjusted padding for mobile */
             }
         }
     </style>
@@ -194,7 +184,7 @@
             </div>
         </div>
     </div>
-    <footer class="fixed-footer">
+    <footer class="footer">
         <p>© 2025 Ken Kappie | File Duplication Detector. For educational use only. All rights reserved.</p>
         <p>Please be patient as requests can take up to a minute depending on file size and complexity.</p>
         <p class="footer-links">
